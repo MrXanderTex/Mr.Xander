@@ -1,0 +1,151 @@
+# -*- coding: cp1252 -*-
+import feedparser
+import Tkinter as tk
+import time
+import datetime
+from datetime import datetime, timedelta
+import re
+trg1 = 1
+trg2 = 1
+
+sw = 1200
+sh = 100
+
+
+root = tk.Tk()
+canvas = tk.Canvas(root, width=sw, height=sh,bg='darkblue')
+canvas.pack()
+while True:
+    try:
+        
+        def parseRSS( rss_url ):
+            return feedparser.parse( rss_url ) 
+            
+        def getHeadlines( rss_url ):
+            headlines = []
+            
+            feed = parseRSS( rss_url )
+            for newsitem in feed['items']:
+                headlines.append(newsitem['title'])
+            
+            return headlines
+
+        allheadlines = []
+        
+        newsurls = {
+            
+            #'googlenews':       'https://news.google.com/news/rss/?hl=en&amp;ned=us&amp;gl=US',
+            'yahoonews':        'http://news.yahoo.com/rss/'
+        }
+        
+        for key,url in newsurls.items():
+            allheadlines.extend( getHeadlines( url ) )
+         
+        hList = []
+        for hl in allheadlines:
+            hList.append(hl)
+            
+        subAppend = []
+        for ggg in range(15):
+            subAppend.append(" # "+hList[ggg]+"         ")
+            
+        #print subAppend
+        
+        yyy = ''.join(subAppend)
+        #print yyy
+        if "&apos;" in yyy:
+            jjj = yyy.replace("&apos;", "'")
+        else:
+            jjj = yyy
+        
+        #print "step2"
+
+        if "&#039;" in jjj:
+            jjs = jjj.replace("&#039;", "'")
+        else:
+            jjs = jjj
+            
+        kkk = re.sub(r'[^\x00-\x7F]+',"'", jjs)
+        
+        #print "step5"
+        
+        
+        text1 = kkk.upper()
+        #print text1
+
+        #print len(text1)
+        canvas.create_rectangle([160, 100, 270, 75],fill="black")
+        canvas.create_rectangle([25, 100, 135, 75],fill="black")
+        canvas.create_rectangle([295, 100, 405, 75],fill="black")
+        canvas.create_polygon([-500,sh/2.4,sw,0, sw+3, sh/1.5], fill='#5a0f05', width=3)
+        rc1 = canvas.create_text(sw+(len(text1)*8),60,fill="white",font="Currier 20 normal bold", text=text1)
+        clock = canvas.create_text(sw*0.18,sh*0.9,fill="white",font="Currier 15 normal bold", text="LON  "+time.strftime("%H:%M"))
+        clock2 = canvas.create_text(sw*0.068,sh*0.9,fill="white",font="Currier 15 normal bold", text="NYC  "+((datetime.now() + timedelta(hours=-5)).strftime('%H:%M')))
+        clock3 = canvas.create_text(sw*0.292,sh*0.9,fill="white",font="Currier 15 normal bold", text="TYO  "+((datetime.now() + timedelta(hours=9)).strftime('%H:%M')))
+
+        #origX = canvas.xview()[0]
+        #print origX
+        #origY = canvas.yview()[0]
+        x = -4
+
+         
+
+        #while (trg1 != 2):
+        #print "new cycle"
+        time.sleep(1)
+        #print 'bb',trg1
+        
+        while (trg1 != 2):
+            
+            if time.strftime("%S") =="00":
+                canvas.delete(clock)
+                canvas.delete(clock2)
+                canvas.delete(clock3)
+                def clk():
+                    global clock
+                    global clock2
+                    global clock3
+                    clock = canvas.create_text(sw*0.18,sh*0.9,fill="white",font="Currier 15 normal bold", text="LON  "+time.strftime("%H:%M"))
+                    clock2 = canvas.create_text(sw*0.068,sh*0.9,fill="white",font="Currier 15 normal bold", text="NYC  "+((datetime.now() + timedelta(hours=-5)).strftime('%H:%M')))
+                    clock3 = canvas.create_text(sw*0.292,sh*0.9,fill="white",font="Currier 15 normal bold", text="TYO  "+((datetime.now() + timedelta(hours=9)).strftime('%H:%M')))
+                clk()
+            #print "step1"
+            if (time.strftime("%M%S")[:4] == "2610") or (time.strftime("%M%S")[:4] == "4610") or (time.strftime("%M%S")[:4] == "0610"):
+                def cbB():
+                    global trg2
+                    trg2 = 2
+                cbB()
+                
+            time.sleep(0.02)
+            
+            canvas.move(rc1, x, 0)
+
+            position=canvas.coords(rc1)
+            
+            #print position
+            
+            
+            if position[0]<=-((len(text1)*8)):
+                canvas.coords(rc1, (sw+(len(text1)*8), 60))
+                if trg2 == 2:
+                    def cbA():
+                        global trg1
+                        trg1 = 2
+                    cbA()
+            #print trg1, trg2
+            canvas.update()
+            #canvas.delete(clock)
+            
+        def cbC():
+            global trg1
+            global trg2
+            trg1 = 1
+            trg2 = 1
+        cbC()
+            
+        #canvas.delete("all")
+    except:
+        time.sleep(120)
+        print "fail"
+
+root.mainloop()
